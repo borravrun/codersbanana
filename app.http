@@ -1,0 +1,7 @@
+POST http://localhost:3000/api/edit-image
+Content-Type: application/json
+
+{
+    "prompt": "Make the image look like a Van Gogh painting.",
+    "imageBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+}
