@@ -3,6 +3,8 @@ import { devtools } from "zustand/middleware";
 type EditorState = {
     image: string | null;
     prompt: string;
+    modelId: string;
+    setModelId: (modelId: string) => void;
     setImage: (image: string | null) => void;
     setPrompt: (prompt: string) => void;
     generateEdit: () => Promise<void>;
@@ -10,10 +12,12 @@ type EditorState = {
 const useEditorState = create<EditorState>()(devtools((set, get) => ({
     image: null,
     prompt: "",
+    modelId: "",
+    setModelId: (modelId: string) => set({ modelId }),
     setImage: (imageData: string | null) => set({ image: imageData }),
     setPrompt: (prompt: string) => set({ prompt }),
     generateEdit: async () => {
-        const { image, prompt } = get();
+        const { image, prompt, modelId } = get();
         if (!image || !prompt) {
             console.error("Image and prompt are required to generate an edit.");
             return;
@@ -24,7 +28,7 @@ const useEditorState = create<EditorState>()(devtools((set, get) => ({
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ imageBase64: image, prompt }),
+                body: JSON.stringify({ imageBase64: image, prompt, modelId}),
             });
             if (!response.ok) {
                 throw new Error(`Error: ${response.statusText}`);
@@ -34,7 +38,8 @@ const useEditorState = create<EditorState>()(devtools((set, get) => ({
         } catch (error) {
             console.error("Failed to generate edit:", error);
         }
-    }
+    },
+    
 })));
 
 export default useEditorState;

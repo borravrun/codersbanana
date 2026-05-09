@@ -39,46 +39,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import useEditorState from "@/store/useEditorState";
+import useModels from "@/store/useModels";
 import { CheckIcon, GlobeIcon } from "lucide-react";
-import { useState } from "react";
-
-const models = [
-  {
-    id: "gpt-4o",
-    name: "GPT-4o",
-    chef: "OpenAI",
-    chefSlug: "openai",
-    providers: ["openai", "azure"],
-  },
-  {
-    id: "gpt-4o-mini",
-    name: "GPT-4o Mini",
-    chef: "OpenAI",
-    chefSlug: "openai",
-    providers: ["openai", "azure"],
-  },
-  {
-    id: "claude-opus-4-20250514",
-    name: "Claude 4 Opus",
-    chef: "Anthropic",
-    chefSlug: "anthropic",
-    providers: ["anthropic", "azure", "google", "amazon-bedrock"],
-  },
-  {
-    id: "claude-sonnet-4-20250514",
-    name: "Claude 4 Sonnet",
-    chef: "Anthropic",
-    chefSlug: "anthropic",
-    providers: ["anthropic", "azure", "google", "amazon-bedrock"],
-  },
-  {
-    id: "gemini-2.0-flash-exp",
-    name: "Gemini 2.0 Flash",
-    chef: "Google",
-    chefSlug: "google",
-    providers: ["google"],
-  },
-];
+import { useState, useEffect, use } from "react";
 
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
@@ -107,8 +70,10 @@ const PromptInputAttachmentsDisplay = () => {
 };
 
 export const AIPromptInput = () => {
+  const {setModelId} = useEditorState();
+  const {models, getimageGenerationModels, chefs} = useModels();
   const {setPrompt, generateEdit} = useEditorState();
-  const [model, setModel] = useState<string>(models[0].id);
+  const [model, setModel] = useState<string>("");
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
   const [status, setStatus] = useState<
     "submitted" | "streaming" | "ready" | "error"
@@ -140,6 +105,15 @@ export const AIPromptInput = () => {
     }, STREAMING_TIMEOUT);
   };
 
+  useEffect(() => {
+      getimageGenerationModels();
+    }, [])
+
+  useEffect(() => {
+    setModel(models[0]?.id);
+    setModelId(models[0]?.chefSlug);
+  }, [models]);
+
   return (
     <div className="size-full">
         <PromptInput globalDrop multiple onSubmit={handleSubmit}>
@@ -155,10 +129,7 @@ export const AIPromptInput = () => {
                   <PromptInputActionAddAttachments />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
-              <PromptInputButton>
-                <GlobeIcon size={16} />
-                <span>Search</span>
-              </PromptInputButton>
+             
               <ModelSelector
                 onOpenChange={setModelSelectorOpen}
                 open={modelSelectorOpen}
@@ -181,8 +152,8 @@ export const AIPromptInput = () => {
                   <ModelSelectorInput placeholder="Search models..." />
                   <ModelSelectorList>
                     <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-                    {["OpenAI", "Anthropic", "Google"].map((chef) => (
-                      <ModelSelectorGroup heading={chef} key={chef}>
+                    {chefs.map((chef) => (
+                      <ModelSelectorGroup heading={chef.toUpperCase()} key={chef}>
                         {models
                           .filter((m) => m.chef === chef)
                           .map((m) => (
@@ -190,6 +161,7 @@ export const AIPromptInput = () => {
                               key={m.id}
                               onSelect={() => {
                                 setModel(m.id);
+                                setModelId(m.chefSlug);
                                 setModelSelectorOpen(false);
                               }}
                               value={m.id}
@@ -197,12 +169,10 @@ export const AIPromptInput = () => {
                               <ModelSelectorLogo provider={m.chefSlug} />
                               <ModelSelectorName>{m.name}</ModelSelectorName>
                               <ModelSelectorLogoGroup>
-                                {m.providers.map((provider) => (
                                   <ModelSelectorLogo
-                                    key={provider}
-                                    provider={provider}
+                                    key={'openrouter'}
+                                    provider={'openrouter'}
                                   />
-                                ))}
                               </ModelSelectorLogoGroup>
                               {model === m.id ? (
                                 <CheckIcon className="ml-auto size-4" />
