@@ -17,5 +17,5 @@ export async function POST(request: Request) {
         
     })
     
-    return NextResponse.json({ result: generatedImage });
+    return NextResponse.json({ result: `data:image/png;base64,${generatedImage.base64}` });
 }

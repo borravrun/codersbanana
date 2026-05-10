@@ -41,7 +41,7 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import useEditorState from "@/store/useEditorState";
 import useModels from "@/store/useModels";
 import { CheckIcon, GlobeIcon } from "lucide-react";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
@@ -72,12 +72,10 @@ const PromptInputAttachmentsDisplay = () => {
 export const AIPromptInput = () => {
   const {setModelId} = useEditorState();
   const {models, getimageGenerationModels, chefs} = useModels();
-  const {setPrompt, generateEdit} = useEditorState();
+  const {setPrompt, generateEdit, status, setStatus} = useEditorState();
   const [model, setModel] = useState<string>("");
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
-  const [status, setStatus] = useState<
-    "submitted" | "streaming" | "ready" | "error"
-  >("ready");
+ 
 
   const selectedModelData = models.find((m) => m.id === model);
 
@@ -93,21 +91,11 @@ export const AIPromptInput = () => {
 
     setPrompt(message.text);
     generateEdit();
-    // eslint-disable-next-line no-console
-    console.log("Submitting message:", message);
-
-    setTimeout(() => {
-      setStatus("streaming");
-    }, SUBMITTING_TIMEOUT);
-
-    setTimeout(() => {
-      setStatus("ready");
-    }, STREAMING_TIMEOUT);
   };
 
-  useEffect(() => {
-      getimageGenerationModels();
-    }, [])
+  useLayoutEffect(() => {
+    getimageGenerationModels();
+  }, []);
 
   useEffect(() => {
     setModel(models[0]?.id);
