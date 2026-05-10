@@ -5,6 +5,7 @@ type EditorState = {
   prompt: string;
   modelId: string;
   history: string[];
+  showHistory: boolean;
   status: "submitted" | "streaming" | "ready" | "error";
   undo: () => void;
   redo: () => void;
@@ -16,13 +17,16 @@ type EditorState = {
   generateEdit: () => Promise<void>;
   setSelectedHistoryIndex: (index: number) => void;
   clearHistory: () => void; 
+  setShowHistory: (showHistory: boolean) => void;
 };
+
 const useEditorState = create<EditorState>()(
   devtools((set, get) => ({
     image: null,
     prompt: "",
     modelId: "",
     history: [],
+    showHistory: false,
     status: "ready",
     selectedHistoryIndex: 0,
     setImage: (imageData: string | null) => {
@@ -103,7 +107,10 @@ const useEditorState = create<EditorState>()(
         selectedHistoryIndex: 0,
         image: newHistory[0],
       });
-    }
+    },
+    setShowHistory: (showHistory: boolean) => {
+      set({ showHistory });
+    },
   })),
 );
 

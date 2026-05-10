@@ -8,7 +8,7 @@ import useEditorState from "@/store/useEditorState";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
-  const { undo, redo, selectedHistoryIndex, history } = useEditorState();
+  const { undo, redo, selectedHistoryIndex, history, showHistory, setShowHistory } = useEditorState();
   return (
     <header className="h-16 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 z-50">
       {/* Left: Branding */}
@@ -95,6 +95,7 @@ export function Navbar() {
               "h-9 w-9 transition-all duration-200 bg-zinc-800 text-zinc-100 border border-zinc-700",
             )}
             title="Open History"
+            onClick={() => setShowHistory(!showHistory)}
           >
             <History size={18} />
           </Button>

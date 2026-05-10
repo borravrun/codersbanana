@@ -13,7 +13,7 @@ import useModels from "@/store/useModels";
 
 export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { image, setImage, status } = useEditorState();
+  const { image, setImage, status, showHistory } = useEditorState();
   
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +111,7 @@ export default function Home() {
 
 
           {/* RIGHT COLUMNS EDIT HISTORY */}
-          <RightSidebar />
+          {showHistory && <RightSidebar />}
         </div>
       </div>
     </>
