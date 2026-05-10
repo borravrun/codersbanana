@@ -13,7 +13,7 @@ import useModels from "@/store/useModels";
 
 export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { image, setImage } = useEditorState();
+  const { image, setImage, status } = useEditorState();
   
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +100,7 @@ export default function Home() {
               </div>
 
               {/* render when image in generating */}
-              {/* <ImageGenerationLoading /> */}
+              {status === "submitted" && <ImageGenerationLoading />}
             </div>
 
             {/* PROMPT INPUT AREA */}
