@@ -4,10 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Download, History, Redo, Undo, Upload, X } from "lucide-react";
-
+import useEditorState from "@/store/useEditorState";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
+  const { undo, redo, selectedHistoryIndex, history } = useEditorState();
   return (
     <header className="h-16 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 z-50">
       {/* Left: Branding */}
@@ -40,6 +41,8 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+            disabled={selectedHistoryIndex <= 0}
+            onClick={undo}
           >
             <Undo size={15} />
           </Button>
@@ -50,6 +53,8 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+            disabled={selectedHistoryIndex >= history.length - 1}
+            onClick={redo}
           >
             <Redo size={15} />
           </Button>

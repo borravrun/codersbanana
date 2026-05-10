@@ -6,6 +6,8 @@ type EditorState = {
   modelId: string;
   history: string[];
   status: "submitted" | "streaming" | "ready" | "error";
+  undo: () => void;
+  redo: () => void;
   setStatus: (status: "submitted" | "streaming" | "ready" | "error") => void;
   selectedHistoryIndex: number;
   setModelId: (modelId: string) => void;
@@ -13,6 +15,7 @@ type EditorState = {
   setPrompt: (prompt: string) => void;
   generateEdit: () => Promise<void>;
   setSelectedHistoryIndex: (index: number) => void;
+  clearHistory: () => void; 
 };
 const useEditorState = create<EditorState>()(
   devtools((set, get) => ({
@@ -21,22 +24,20 @@ const useEditorState = create<EditorState>()(
     modelId: "",
     history: [],
     status: "ready",
-    selectedHistoryIndex: 1,
-    setStatus: (status: "submitted" | "streaming" | "ready" | "error") =>
-      set({ status }),
-    setModelId: (modelId: string) => set({ modelId }),
+    selectedHistoryIndex: 0,
     setImage: (imageData: string | null) => {
       const { history } = get();
-
       set({
         image: imageData,
         history: [...history, imageData as string],
-        selectedHistoryIndex: history.length + 1,
+        selectedHistoryIndex: history.length,
       });
     },
     setPrompt: (prompt: string) => set({ prompt }),
+    setModelId: (modelId: string) => set({ modelId }),
+    setStatus: (status: "submitted" | "streaming" | "ready" | "error") => set({ status }),
     generateEdit: async () => {
-      const { image, prompt, modelId, history, status } = get();
+      const { image, prompt, modelId, history } = get();
 
       if (!image || !prompt) {
         console.error("Image and prompt are required to generate an edit.");
@@ -55,10 +56,11 @@ const useEditorState = create<EditorState>()(
           throw new Error(`Error: ${response.statusText}`);
         }
         const data = await response.json();
+       
         set({
           image: data.result,
           history: [...history, data.result as string],
-          selectedHistoryIndex: history.length + 1,
+          selectedHistoryIndex: history.length,
           status: "ready",
         });
       } catch (error) {
@@ -68,10 +70,40 @@ const useEditorState = create<EditorState>()(
     setSelectedHistoryIndex: (index: number) => {
       const { history } = get();
       set({
-        selectedHistoryIndex: index + 1,
+        selectedHistoryIndex: index,
         image: history[index],
       });
     },
+    undo: () => {
+      const { history, selectedHistoryIndex } = get();
+      if (selectedHistoryIndex > 0) {
+        const newIndex = selectedHistoryIndex - 1;
+        set({
+          selectedHistoryIndex: newIndex,
+          image: history[newIndex],
+        });
+      }
+    },
+    redo: () => {
+      const { history, selectedHistoryIndex } = get();
+      if (selectedHistoryIndex < history.length - 1) {
+        const newIndex = selectedHistoryIndex + 1;
+        set({
+          selectedHistoryIndex: newIndex,
+          image: history[newIndex],
+        });
+      }
+    },
+    clearHistory: () => {
+      const { history, selectedHistoryIndex } = get();
+      const newHistory = history.filter((_, index) => index == selectedHistoryIndex);
+      console.log(newHistory);
+      set({
+        history: newHistory,
+        selectedHistoryIndex: 0,
+        image: newHistory[0],
+      });
+    }
   })),
 );
 

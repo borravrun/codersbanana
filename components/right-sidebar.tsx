@@ -14,8 +14,8 @@ import useEditorState from "@/store/useEditorState";
 
 
 export const RightSidebar = () => {
-  const { history, selectedHistoryIndex, setSelectedHistoryIndex } = useEditorState();
-  const isActive = (index: number) => selectedHistoryIndex === index + 1;
+  const { history, selectedHistoryIndex, setSelectedHistoryIndex, clearHistory } = useEditorState();
+  const isActive = (index: number) => selectedHistoryIndex === index;
 
   return (
     <aside className="flex h-full w-40 flex-col shrink-0 border-l border-zinc-800 bg-zinc-950/50 z-20 overflow-hidden">
@@ -79,8 +79,8 @@ export const RightSidebar = () => {
                 variant="ghost"
                 size="sm"
                 className="w-full text-zinc-500 hover:text-red-400 hover:bg-zinc-900 rounded-lg"
-                onClick={() => {}}
-                disabled={true}
+                onClick={() => clearHistory()}
+                disabled={history.length === 0}
               >
                 <Trash2 size={14} className="mr-2" />
                 <span className="text-xs">Clear History</span>
