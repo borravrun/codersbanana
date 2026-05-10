@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Download, History, Redo, Undo, Upload, X } from "lucide-react";
 import useEditorState from "@/store/useEditorState";
 import { cn } from "@/lib/utils";
+import { downloadImage } from "@/utils/convertToBlob";
 
 export function Navbar() {
-  const { undo, redo, selectedHistoryIndex, history, showHistory, setShowHistory } = useEditorState();
+  const { undo, redo, selectedHistoryIndex, history, showHistory, setShowHistory, image } = useEditorState();
   return (
     <header className="h-16 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 z-50">
       {/* Left: Branding */}
@@ -78,6 +79,8 @@ export function Navbar() {
             variant="default"
             size="sm"
             className="h-9 bg-yellow-500 text-zinc-950 hover:bg-yellow-400 font-bold px-2.5 md:px-4"
+            onClick={() => downloadImage(image as string)}
+            disabled={!image}
           >
             <span className="hidden md:inline">Export</span>
             <Download size={14} className="md:ml-2" />

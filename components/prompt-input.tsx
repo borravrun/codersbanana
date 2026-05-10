@@ -43,9 +43,6 @@ import useModels from "@/store/useModels";
 import { CheckIcon, GlobeIcon } from "lucide-react";
 import { useState, useEffect, useLayoutEffect } from "react";
 
-const SUBMITTING_TIMEOUT = 200;
-const STREAMING_TIMEOUT = 2000;
-
 const PromptInputAttachmentsDisplay = () => {
   const attachments = usePromptInputAttachments();
 
@@ -72,7 +69,7 @@ const PromptInputAttachmentsDisplay = () => {
 export const AIPromptInput = () => {
   const {setModelId} = useEditorState();
   const {models, getimageGenerationModels, chefs} = useModels();
-  const {setPrompt, generateEdit, status, setStatus} = useEditorState();
+  const {setPrompt, generateEdit, status, setStatus, setFiles} = useEditorState();
   const [model, setModel] = useState<string>("");
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
  
@@ -80,6 +77,7 @@ export const AIPromptInput = () => {
   const selectedModelData = models.find((m) => m.id === model);
 
   const handleSubmit = (message: PromptInputMessage) => {
+    
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
 
@@ -90,6 +88,7 @@ export const AIPromptInput = () => {
     setStatus("submitted");
 
     setPrompt(message.text);
+    setFiles(message.files);
     generateEdit();
   };
 

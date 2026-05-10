@@ -1,7 +1,9 @@
+import { FileUIPart } from "ai";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 type EditorState = {
   image: string | null;
+  files: FileUIPart[];
   prompt: string;
   modelId: string;
   history: string[];
@@ -13,6 +15,7 @@ type EditorState = {
   selectedHistoryIndex: number;
   setModelId: (modelId: string) => void;
   setImage: (image: string | null) => void;
+  setFiles: (files: FileUIPart) => void;
   setPrompt: (prompt: string) => void;
   generateEdit: () => Promise<void>;
   setSelectedHistoryIndex: (index: number) => void;
@@ -23,6 +26,7 @@ type EditorState = {
 const useEditorState = create<EditorState>()(
   devtools((set, get) => ({
     image: null,
+    files: [],
     prompt: "",
     modelId: "",
     history: [],
@@ -37,14 +41,16 @@ const useEditorState = create<EditorState>()(
         selectedHistoryIndex: history.length,
       });
     },
+    setFiles: (files: FileUIPart[]) => set({ files }),
     setPrompt: (prompt: string) => set({ prompt }),
     setModelId: (modelId: string) => set({ modelId }),
     setStatus: (status: "submitted" | "streaming" | "ready" | "error") => set({ status }),
     generateEdit: async () => {
-      const { image, prompt, modelId, history } = get();
+      const { image, prompt, modelId, history, files } = get();
 
       if (!image || !prompt) {
         console.error("Image and prompt are required to generate an edit.");
+        set({ status: "error" });
         return;
       }
       try {
@@ -53,7 +59,7 @@ const useEditorState = create<EditorState>()(
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ imageBase64: image, prompt, modelId }),
+          body: JSON.stringify({ imageBase64: image, prompt, modelId, files: files.map(f => f.url) }),
         });
         if (!response.ok) {
           set({ status: "error" });
