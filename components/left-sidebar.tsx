@@ -24,8 +24,11 @@ import {
 import GridItem from "@/components/grid-item";
 import { filters, ratios } from "@/lib/constants";
 import { ToolButton } from "@/components//tool-button";
+import useEditorState from "@/store/useEditorState";
 
 export const LeftSidebar = () => {
+  const { applyFilter, image, status, setStatus } = useEditorState();
+  
   return (
     <aside className="hidden md:flex w-80 flex-col border-r border-zinc-800 bg-zinc-950/50 z-20 shrink-0 h-full">
       <ScrollArea className="h-full w-full">
@@ -152,9 +155,10 @@ export const LeftSidebar = () => {
                           label={item.name}
                           desc={item.prompt}
                           onClick={() => {
-                            
+                            setStatus("submitted")
+                            applyFilter(item.prompt);
                           }}
-                          disabled={true}
+                          disabled={!image || status !== "ready"}
                         />
                       );
                     })}

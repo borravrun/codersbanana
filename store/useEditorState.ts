@@ -18,6 +18,7 @@ type EditorState = {
   setFiles: (files: FileUIPart) => void;
   setPrompt: (prompt: string) => void;
   generateEdit: () => Promise<void>;
+  applyFilter: (prompt: string) => void;
   setSelectedHistoryIndex: (index: number) => void;
   clearHistory: () => void; 
   setShowHistory: (showHistory: boolean) => void;
@@ -116,6 +117,46 @@ const useEditorState = create<EditorState>()(
     },
     setShowHistory: (showHistory: boolean) => {
       set({ showHistory });
+    },
+    applyFilter: async (prompt: string) => {
+      const { image, modelId, files, history } = get();
+      
+      const finalPrompt = `${prompt} 
+        Technical Contstraints: 
+        1. STRICTLY PRESERVE COMPOSITION: Do not change the subject pose, the camera angle, or the placement of objects
+        2. OUTPUT FORMAT: This is style transfer. Keep the underlying structure unchanged and identical to the original image, maintain the same aspect ratio, only adjust the style.
+        `;
+
+      if (!image || !finalPrompt) {
+        console.error("Image and prompt are required to generate an edit.");
+        set({ status: "error" });
+        return;
+      }
+      try {
+        
+        const response = await fetch("/api/edit-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ imageBase64: image, finalPrompt, modelId, files: files.map(f => f.url) }),
+        });
+        if (!response.ok) {
+          set({ status: "error" });
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+       
+        set({
+          image: data.result,
+          history: [...history, data.result as string],
+          selectedHistoryIndex: history.length,
+          status: "ready",
+        });
+      } catch (error) {
+        console.error("Failed to generate edit:", error);
+      }
+      
     },
   })),
 );
