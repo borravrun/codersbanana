@@ -7,13 +7,14 @@ const client = createOpenRouter({
 });
 
 export async function POST(request: Request) {
-    const {prompt, imageBase64, modelId, files} = await request.json();
+    const {prompt, imageBase64, modelId, files, aspectRatio} = await request.json();
     const { image: generatedImage } = await generateImage({
         model: client.imageModel(modelId),
         prompt: {
             text: prompt,
-            images: [imageBase64, ...files],
-        },
+            images: files.length > 0 ? [imageBase64, ...files] : [imageBase64],          
+      },
+      aspectRatio: aspectRatio,
         
     })
     

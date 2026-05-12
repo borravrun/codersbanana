@@ -27,7 +27,7 @@ import { ToolButton } from "@/components//tool-button";
 import useEditorState from "@/store/useEditorState";
 
 export const LeftSidebar = () => {
-  const { applyFilter, image, status, setStatus } = useEditorState();
+  const { applyFilter, image, status, setStatus, applyAspectRatio } = useEditorState();
   
   return (
     <aside className="hidden md:flex w-80 flex-col border-r border-zinc-800 bg-zinc-950/50 z-20 shrink-0 h-full">
@@ -183,9 +183,10 @@ export const LeftSidebar = () => {
                         label={r.label}
                         desc={r.desc}
                         onClick={() => {
-
+                          setStatus("submitted")
+                          applyAspectRatio(r.aspectRatio);
                         }}
-                        disabled={true}
+                        disabled={!image || status !== "ready"}
                       />
                     ))}
                   </div>

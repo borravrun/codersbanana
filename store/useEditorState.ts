@@ -19,6 +19,7 @@ type EditorState = {
   setPrompt: (prompt: string) => void;
   generateEdit: () => Promise<void>;
   applyFilter: (prompt: string) => void;
+  applyAspectRatio: (aspectRatio: string) => void;
   setSelectedHistoryIndex: (index: number) => void;
   clearHistory: () => void; 
   setShowHistory: (showHistory: boolean) => void;
@@ -140,6 +141,48 @@ const useEditorState = create<EditorState>()(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ imageBase64: image, finalPrompt, modelId, files: files.map(f => f.url) }),
+        });
+        if (!response.ok) {
+          set({ status: "error" });
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+       
+        set({
+          image: data.result,
+          history: [...history, data.result as string],
+          selectedHistoryIndex: history.length,
+          status: "ready",
+        });
+      } catch (error) {
+        console.error("Failed to generate edit:", error);
+      }
+      
+    },
+    applyAspectRatio: async (aspectRatio: string) => {
+      const { image, modelId, history } = get();
+      
+      const prompt = `
+        Outpaint and expand The original image content should remain perfectly preserved and unchanged.
+        Extend the canvas to a ${aspectRatio} aspect ratio by seamlessly generating new content on both sides.
+        Match the existing lighting, color grading, and visual style exactly.
+        The new areas should blend imperceptibly with the original — same lighting direction, color temperature, depth of field, texture, and atmosphere.
+        Do not alter the original image. Keep all subjects, horizon lines, and perspective consistent. --ar ${aspectRatio}
+      `;
+
+      if (!image || !prompt) {
+        console.error("Image and prompt are required to generate an edit.");
+        set({ status: "error" });
+        return;
+      }
+      try {
+        
+        const response = await fetch("/api/edit-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ imageBase64: image, prompt, modelId, aspectRatio, files: [] }),
         });
         if (!response.ok) {
           set({ status: "error" });
