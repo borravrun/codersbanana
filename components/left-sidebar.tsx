@@ -25,9 +25,10 @@ import GridItem from "@/components/grid-item";
 import { filters, ratios } from "@/lib/constants";
 import { ToolButton } from "@/components//tool-button";
 import useEditorState from "@/store/useEditorState";
+import { ToolType } from "./image-editor";
 
 export const LeftSidebar = () => {
-  const { applyFilter, image, status, setStatus, applyAspectRatio } = useEditorState();
+  const { applyFilter, image, status, setStatus, applyAspectRatio, selectedTool, setSelectedTool } = useEditorState();
   
   return (
     <aside className="hidden md:flex w-80 flex-col border-r border-zinc-800 bg-zinc-950/50 z-20 shrink-0 h-full">
@@ -42,26 +43,26 @@ export const LeftSidebar = () => {
 
             <div className="grid grid-cols-4 gap-2">
               <ToolButton
-                active={true}
-                onClick={()=>{}}
+                active={selectedTool === ToolType.MOVE}
+                onClick={() => setSelectedTool(ToolType.MOVE)}
                 icon={<Hand size={18} />}
                 label="Pan"
               />
               <ToolButton
-                active={false}
-                onClick={() => {}}
+                active={selectedTool === ToolType.RECTANGLE}
+                onClick={() => setSelectedTool(ToolType.RECTANGLE)}
                 icon={<Square size={18} />}
                 label="Select"
               />
               <ToolButton
-                active={false}
-                onClick={()=>{}}
+                active={selectedTool === ToolType.BRUSH}
+                onClick={() => setSelectedTool(ToolType.BRUSH)}
                 icon={<Brush size={18} />}
                 label="Brush"
               />
               <ToolButton
-                active={false}
-                onClick={()=>{}}
+                active={selectedTool === ToolType.ERASER}
+                onClick={() => setSelectedTool(ToolType.ERASER)}
                 icon={<Eraser size={18} />}
                 label="Erase"
               />

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Download, History, Redo, Undo, Upload, X } from "lucide-react";
 import useEditorState from "@/store/useEditorState";
 import { cn } from "@/lib/utils";
-import { downloadImage } from "@/utils/convertToBlob";
+import { downloadImage } from "@/lib/convertToBlob";
 
 export function Navbar() {
   const { undo, redo, selectedHistoryIndex, history, showHistory, setShowHistory, image } = useEditorState();

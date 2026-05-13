@@ -1,3 +1,4 @@
+import { ToolType } from "@/components/image-editor";
 import { FileUIPart } from "ai";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -9,6 +10,7 @@ type EditorState = {
   history: string[];
   showHistory: boolean;
   status: "submitted" | "streaming" | "ready" | "error";
+  selectedTool: ToolType,
   undo: () => void;
   redo: () => void;
   setStatus: (status: "submitted" | "streaming" | "ready" | "error") => void;
@@ -23,6 +25,7 @@ type EditorState = {
   setSelectedHistoryIndex: (index: number) => void;
   clearHistory: () => void; 
   setShowHistory: (showHistory: boolean) => void;
+  setSelectedTool: (tool: ToolType) => void;
 };
 
 const useEditorState = create<EditorState>()(
@@ -35,6 +38,7 @@ const useEditorState = create<EditorState>()(
     showHistory: false,
     status: "ready",
     selectedHistoryIndex: 0,
+    selectedTool: ToolType.MOVE,
     setImage: (imageData: string | null) => {
       const { history } = get();
       set({
@@ -201,6 +205,7 @@ const useEditorState = create<EditorState>()(
       }
       
     },
+    setSelectedTool: (tool: ToolType) => set({ selectedTool: tool }),
   })),
 );
 
