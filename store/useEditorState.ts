@@ -1,9 +1,10 @@
-import { ToolType } from "@/components/image-editor";
+import { ToolType } from "@/lib/constants";
 import { FileUIPart } from "ai";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 type EditorState = {
   image: string | null;
+  mask: string | null;
   files: FileUIPart[];
   prompt: string;
   modelId: string;
@@ -11,8 +12,10 @@ type EditorState = {
   showHistory: boolean;
   status: "submitted" | "streaming" | "ready" | "error";
   selectedTool: ToolType,
+  brushSize: number;
   undo: () => void;
   redo: () => void;
+  setMask: (mask: string) => void;
   setStatus: (status: "submitted" | "streaming" | "ready" | "error") => void;
   selectedHistoryIndex: number;
   setModelId: (modelId: string) => void;
@@ -26,11 +29,13 @@ type EditorState = {
   clearHistory: () => void; 
   setShowHistory: (showHistory: boolean) => void;
   setSelectedTool: (tool: ToolType) => void;
+  setBrushSize: (size: number) => void;
 };
 
 const useEditorState = create<EditorState>()(
   devtools((set, get) => ({
     image: null,
+    mask: null,
     files: [],
     prompt: "",
     modelId: "",
@@ -39,6 +44,10 @@ const useEditorState = create<EditorState>()(
     status: "ready",
     selectedHistoryIndex: 0,
     selectedTool: ToolType.MOVE,
+    brushSize: 10,
+    setMask: (mask: string) => {
+         set({ mask });
+       },
     setImage: (imageData: string | null) => {
       const { history } = get();
       set({
@@ -52,8 +61,27 @@ const useEditorState = create<EditorState>()(
     setModelId: (modelId: string) => set({ modelId }),
     setStatus: (status: "submitted" | "streaming" | "ready" | "error") => set({ status }),
     generateEdit: async () => {
-      const { image, prompt, modelId, history, files } = get();
-
+      const { image, prompt, modelId, history, files, mask } = get();
+      const finalPrompt = `
+          TASK: Professional Image In-painting / Generative Fill.
+          ROLE: Expert Photo Retoucher.
+      
+          INPUT DATA EXPLANATION:
+          - You have received a primary image and a corresponding mask image.
+          - The mask defines the precise editing region.
+          - WHITE pixels in the mask indicate the area where you must apply the user's instruction.
+          - BLACK pixels in the mask must remain exactly as they are in the original image.
+      
+          USER GOAL:
+          "${prompt}"
+      
+          EXECUTION GUIDELINES (CRITICAL):
+          1. IF REMOVING/ERASING: If the user asks to "remove", "erase", or "delete" an object, you MUST perform "Background Reconstruction". Analyze the surrounding background (wall, floor, nature) and seamlessly extend it over the masked area to hide the object.
+          2. IF CHANGING/REPLACING: If the user asks to add or change something, generate the new object strictly within the white mask, matching the scene's lighting and perspective.
+          3. SEAMLESS INTEGRATION: The new content generated inside the white masked area must perfectly match the surrounding environment's perspective, lighting direction, shadows, and color grading.
+          4. TEXTURE MATCHING: Replicate the exact film grain, noise level, and sharpness of the original photo to prevent a "pasted-on" look. The transition at the mask boundary must be invisible.
+          5. STRICT ISOLATION: Do not modify any pixels outside the designated white masked area under any circumstances`
+      
       if (!image || !prompt) {
         console.error("Image and prompt are required to generate an edit.");
         set({ status: "error" });
@@ -65,7 +93,7 @@ const useEditorState = create<EditorState>()(
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ imageBase64: image, prompt, modelId, files: files.map(f => f.url) }),
+          body: JSON.stringify({ imageBase64: image, prompt: finalPrompt, modelId, files: files.map(f => f.url), mask: mask }),
         });
         if (!response.ok) {
           set({ status: "error" });
@@ -206,6 +234,7 @@ const useEditorState = create<EditorState>()(
       
     },
     setSelectedTool: (tool: ToolType) => set({ selectedTool: tool }),
+    setBrushSize: (size: number) => set({ brushSize: size }),
   })),
 );
 

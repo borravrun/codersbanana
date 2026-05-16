@@ -25,10 +25,10 @@ import GridItem from "@/components/grid-item";
 import { filters, ratios } from "@/lib/constants";
 import { ToolButton } from "@/components//tool-button";
 import useEditorState from "@/store/useEditorState";
-import { ToolType } from "./image-editor";
+import { ToolType } from "@/lib/constants";
 
 export const LeftSidebar = () => {
-  const { applyFilter, image, status, setStatus, applyAspectRatio, selectedTool, setSelectedTool } = useEditorState();
+  const { applyFilter, image, status, setStatus, applyAspectRatio, selectedTool, setSelectedTool, brushSize, setBrushSize } = useEditorState();
   
   return (
     <aside className="hidden md:flex w-80 flex-col border-r border-zinc-800 bg-zinc-950/50 z-20 shrink-0 h-full">
@@ -75,7 +75,7 @@ export const LeftSidebar = () => {
                   Size
                 </h3>
                 <span className="text-xs font-mono text-zinc-200 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
-                  10px
+                  {brushSize} px
                 </span>
               </div>
 
@@ -85,7 +85,8 @@ export const LeftSidebar = () => {
                 max={100}
                 min={5}
                 step={1}
-                onValueChange={()=>{
+                onValueChange={(e) => {
+                  setBrushSize(e[0]);
                 }}
                 className="py-2 [&>.relative>.absolute]:bg-yellow-500 **:[[role=slider]]:border-yellow-500 **:[[role=slider]]:bg-zinc-950 **:[[role=slider]]:ring-offset-zinc-950 **:[[role=slider]]:focus-visible:ring-yellow-500"
               />
